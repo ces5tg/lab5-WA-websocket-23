@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat con Socket.IO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script>
+      function mostrarImagen() {
+        var inputFile = document.getElementById("inputFile");
+        var imagenMostrada = document.getElementById("imagenMostrada1");
+
+        var file = inputFile.files[0];
+        console.log(inputFile.files[0])
+        if (file) {
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+            imagenMostrada.src = e.target.result;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
+       function mostrarImagen2() {
+        var inputFile = document.getElementById("inputFile2");
+        var imagenMostrada = document.getElementById("imagenMostrada2");
+
+        var file = inputFile.files[0];
+
+        if (file) {
+          var reader = new FileReader();
+
+          reader.onload = function (e) {
+            imagenMostrada.src = e.target.result;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
+    </script>
+    <script>
+      // Conexión de Socket.IO al servidor
+      var socket = io();
+
+      // Función para enviar mensajes del chat 1
+      function enviarMensaje1() {
+        var mensaje = document.getElementById("mensaje1").value;
+        socket.emit("chat message 1", mensaje);
+        document.getElementById("mensaje1").value = "";
+        return false;
+      }
+      function construye(color, posicion, check, msg) {
+        var contenedorDiv = document.createElement("div");
+
+        var etiqueta = document.createElement("p");
+        etiqueta.textContent = "" + msg.mensaje;
+        etiqueta.classList.add(
+          "text-lg",
+          "-mb-1",
+          "whitespace-normal",
+          "break-words",
+          "leading-none"
+        );
+
+        var hora = document.createElement("p");
+        hora.textContent = "" + msg.hora;
+        hora.classList.add("mr-2");
+        var iconoVisto = document.createElement("i");
+        iconoVisto.classList.add("fas", "fa-check");
+        var iconoVisto2 = document.createElement("i");
+        iconoVisto2.classList.add("fa-solid", "fa-check");
+        var contenedorHora = document.createElement("div");
+        contenedorHora.appendChild(hora);
+        if (check) {
+          contenedorHora.appendChild(iconoVisto);
+          contenedorHora.appendChild(iconoVisto2);
+        }
+        contenedorHora.classList.add(
+          "flex",
+          "justify-end",
+          "items-center",
+          "text-xs"
+        );
+        var contenedorDivBlock = document.createElement("div");
+
+        contenedorDivBlock.appendChild(etiqueta);
+        contenedorDivBlock.appendChild(contenedorHora);
+        contenedorDivBlock.classList.add(
+          "w-56",
+          color,
+          "px-4",
+          "py-1",
+          "rounded",
+          "rounded-md"
+        );
+        contenedorDiv.appendChild(contenedorDivBlock);
+        contenedorDiv.classList.add(
+          "mx-1",
+          "mt-1",
+          "flex",
+          posicion,
+          "text-black",
+          "font-bold"
+        );
+        return contenedorDiv;
+      }
+      // Función para recibir mensajes del chat 1
+      socket.on("chat message 1", function (msg) {
+        var chat1 = document.getElementById("chat-1");
+        var chat2 = document.getElementById("chat-2");
+
+        //primer chat
+        chat1.appendChild(construye("bg-green-400", "justify-end", true, msg));
+
+        //segundo chat
+
+        chat2.appendChild(
+          construye("bg-yellow-400", "justify-start", false, msg)
+        );
+        /* fin del chat 2 */
+      });
+
+      // Función para enviar mensajes del chat 2
+      function enviarMensaje2() {
+        var mensaje = document.getElementById("mensaje2").value;
+        socket.emit("chat message 2", mensaje);
+        document.getElementById("mensaje2").value = "";
+        return false;
+      }
+
+      // Función para recibir mensajes del chat 2
+      socket.on("chat message 2", function (msg) {
+        var chat1 = document.getElementById("chat-1");
+        var chat2 = document.getElementById("chat-2");
+        //perimer chat
+        chat1.appendChild(
+          construye("bg-yellow-400", "justify-start", false, msg)
+        );
+        //segundo chat
+        chat2.appendChild(construye("bg-green-400", "justify-end", true, msg));
+      });
+      function enviarDatos1(event) {
+        event.preventDefault();
+        var inputNombre1 = document.getElementById("nombre1").value;
+
+        var nombreRecibido1 = document.getElementById("nombreRecibido");
+        nombreRecibido1.innerHTML = inputNombre1;
+      }
+      function enviarDatos2(event) {
+        event.preventDefault();
+        var inputNombre2 = document.getElementById("nombre2").value;
+
+        var nombreRecibido2 = document.getElementById("nombreRecibido2");
+        nombreRecibido2.innerHTML = inputNombre2;
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Mensajes</h1>
+    <ul id="lista-mensajes"></ul>
+    <div class="grid grid-cols-2">
+      <!-- CHAT -1 -->
+      <div class="flex justify-center">
+        <div class="w-96">
+          <form action="" class="">
+            <input
+              type="file"
+              id="inputFile"
+              accept="image/*"
+              onchange="mostrarImagen()"
+            />
+            <br />
+            <label for="">nombre</label>
+            <input type="text" id="nombre1" class="border-2 p-2 mt-3" />
+            <br />
+            <button
+              onclick="enviarDatos1(event)"
+              class="bg-green-500 text-white hover:bg-green-300 p-1 rounded rounded-lg px-4 mt-3"
+            >
+              Enviar
+            </button>
+          </form>
+          <!-- <img id="imagenMostrada" src="" alt="Imagen cargada" /> -->
+
+          <!-- AQUI VAN LOS DATOS DEL USUARIO - CHAT-1 -->
+          <div
+            class="bg-blue-500 text-white text-center py-4 -full flex justify-start"
+          >
+            <div>
+              <img
+                id="imagenMostrada1"
+                class="h-12 w-12 rounded-full ml-5 mr-5"
+                src=""
+                alt="Imagen cargada"
+              />
+            </div>
+            <div>
+              <p id="nombreRecibido"></p>
+            </div>
+          </div>
+          <div id="chat-1" class="h-72 overflow-y-auto bg-gray-100"></div>
+          <div>
+            <form onsubmit="return enviarMensaje1()">
+              <div class="flex">
+                <input
+                  id="mensaje1"
+                  autocomplete="off"
+                  class="w-full bg-gray-300"
+                />
+                <button
+                  class="bg-red-500 text-white hover:bg-red-300 p-1 rounded rounded-lg px-4"
+                >
+                  Enviar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- CHAT - 2 -->
+      <div class="flex justify-center">
+        <div class="w-96">
+          <!-- FORMULARIO CHAT-2 -->
+          <form action="" class="">
+            <input
+              type="file"
+              id="inputFile2"
+              accept="image/*"
+              onchange="mostrarImagen2()"
+            />
+            <br />
+            <label for="">nombre</label>
+
+            <input type="text" id="nombre2" class="border-2 p-2 mt-3" />
+            <br />
+            <button
+              onclick="enviarDatos2(event)"
+              class="bg-green-500 text-white hover:bg-green-300 p-1 rounded rounded-lg px-4 mt-3"
+            >
+              Enviar
+            </button>
+          </form>
+          <!-- TITULO DEL CHAT -2 -->
+
+          <div
+            class="bg-blue-500 text-white text-center py-4 -full flex justify-start"
+          >
+            <div>
+              <img
+                id="imagenMostrada2"
+                class="h-12 w-12 rounded-full ml-5 mr-5"
+                src=""
+                alt="Imagen cargada"
+              />
+            </div>
+            <div>
+              <p id="nombreRecibido2"></p>
+            </div>
+          </div>
+          <!-- CONTENEDOR DEL CHAT -2 -->
+          <div id="chat-2" class="h-72 overflow-y-auto bg-gray-100"></div>
+          <div>
+            <form onsubmit="return enviarMensaje2()">
+              <div class="flex">
+                <input
+                  id="mensaje2"
+                  autocomplete="off"
+                  class="w-full bg-gray-300"
+                />
+                <button
+                  class="bg-red-500 text-white hover:bg-red-300 p-1 rounded rounded-lg px-4"
+                >
+                  Enviar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
